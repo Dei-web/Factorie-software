@@ -30,3 +30,6 @@ generated_projects/
 .idea/
 *.swp
 .DS_Store
+
+# Notas personales (no se publican)
+README.personal.md
