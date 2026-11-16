@@ -42,6 +42,25 @@ async def new_conversation(
         await update.message.reply_text("Conversación reiniciada. Envíame una tarea nueva.")
 
 
+async def select_project(
+    update: Update,
+    context: ContextTypes.DEFAULT_TYPE,
+) -> None:
+    chat_id = update.effective_chat.id
+    key = f"telegram:{chat_id}"
+
+    if not context.args:
+        current = submit_task.current_project(key)
+        text = f"Proyecto actual: {current}" if current else "Sin proyecto activo."
+    else:
+        pending_chats.pop(chat_id, None)
+        name = submit_task.select_project(" ".join(context.args), key)
+        text = f"La siguiente tarea se hará en generated_projects/{name}"
+
+    if update.message:
+        await update.message.reply_text(text)
+
+
 async def handle_message(
     update: Update,
     context: ContextTypes.DEFAULT_TYPE,
@@ -108,6 +127,7 @@ def run_telegram_bot() -> None:
 
     app.add_handler(CommandHandler("start", start))
     app.add_handler(CommandHandler("nuevo", new_conversation))
+    app.add_handler(CommandHandler("proyecto", select_project))
     app.add_handler(
         MessageHandler(
             filters.TEXT & ~filters.COMMAND,

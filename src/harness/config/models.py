@@ -11,6 +11,8 @@ model = OpenAIModel(
         "base_url": "https://integrate.api.nvidia.com/v1",
     },
     model_id="nvidia/nemotron-3.5-super-vl-120b-a12b",
+    # Límite conservador: el gestor de contexto compacta antes de llegar aquí.
+    context_window_limit=128_000,
     params={
         "temperature": 0.3,
         "max_tokens": 16384,

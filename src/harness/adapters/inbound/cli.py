@@ -7,7 +7,9 @@ def run_cli() -> None:
     submit_task = SubmitTask()
 
     print("Factorie-Ia CLI")
-    print("Escribe '/nuevo' para empezar una conversación nueva o 'exit' para salir.\n")
+    print("Comandos: /nuevo (conversación y proyecto nuevos), /proyecto <nombre>")
+    print("(trabajar en un proyecto existente de generated_projects/), exit para salir.")
+    print("Cada conversación nueva crea su propia carpeta de proyecto.\n")
 
     while True:
         try:
@@ -22,6 +24,15 @@ def run_cli() -> None:
             if description.lower() in {"/nuevo", "/new"}:
                 submit_task.reset(CLI_CONVERSATION)
                 print("Conversación reiniciada.\n")
+                continue
+
+            if description.lower().startswith("/proyecto"):
+                name = description[len("/proyecto"):].strip()
+                if not name:
+                    print(f"Proyecto actual: {submit_task.current_project(CLI_CONVERSATION)}\n")
+                    continue
+                name = submit_task.select_project(name, CLI_CONVERSATION)
+                print(f"Siguiente tarea en generated_projects/{name}\n")
                 continue
 
             result = submit_task.submit(description, CLI_CONVERSATION)

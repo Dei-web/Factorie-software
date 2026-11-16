@@ -5,6 +5,8 @@ from strands_harness import create_harness
 
 from harness.config.models import model
 from harness.prompts.prompt_agent import AGENT_INSTRUCTIONS
+from harness.tools.screenshot import make_screenshot_tool
+from harness.tools.server_check import make_server_check_tool
 from harness.tools.workdir_sandbox import WorkdirSandbox
 
 
@@ -21,7 +23,7 @@ def create_orchestrator(session_manager, workdir: Path, storage=None):
             "edit": True,
             "subagent": {"max_depth": 1},
         },
-        tools=[handoff_to_user],
+        tools=[handoff_to_user, make_screenshot_tool(workdir), make_server_check_tool(workdir)],
         session=session_manager,
         storage=storage,
         sandbox=WorkdirSandbox(workdir),

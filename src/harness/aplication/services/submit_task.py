@@ -1,9 +1,7 @@
 from strands.vended_tools.handoff_to_user import HANDOFF_INTERRUPT_NAME
 
 from harness.domain.state import TaskResult
-from harness.factorie import create_application, memory_manager
-
-DEFAULT_PROJECT = "telegram_project"
+from harness.factorie import create_application, memory_manager, safe_project_name
 
 
 class SubmitTask:
@@ -13,20 +11,22 @@ class SubmitTask:
     mensajes y entre reinicios del proceso, hasta que se llama a :meth:`reset`.
     """
 
-    def __init__(self, project_name: str = DEFAULT_PROJECT):
-        self.project_name = project_name
+    def __init__(self):
+        # conversation_key -> proyecto fijado con /proyecto para la próxima conversación.
+        self.pinned_projects = {}
         # conversation_key -> {"agent", "execution"} (caché en proceso).
         self.conversations = {}
         # execution_id -> conversation_key, para ejecuciones esperando respuesta del usuario.
         self.pending_executions = {}
 
-    def _get_conversation(self, conversation_key: str):
+    def _get_conversation(self, conversation_key: str, description: str = ""):
         conversation = self.conversations.get(conversation_key)
 
         if conversation is None:
             agent, workdir, execution, is_new = create_application(
-                project_name=self.project_name,
                 conversation_key=conversation_key,
+                description=description,
+                project_name=self.pinned_projects.pop(conversation_key, None),
             )
             conversation = {
                 "agent": agent,
@@ -39,7 +39,7 @@ class SubmitTask:
         return conversation
 
     def submit(self, description: str, conversation_key: str = "cli") -> TaskResult:
-        conversation = self._get_conversation(conversation_key)
+        conversation = self._get_conversation(conversation_key, description)
         agent = conversation["agent"]
         execution = conversation["execution"]
 
@@ -91,6 +91,20 @@ class SubmitTask:
             self.pending_executions.pop(conversation["execution"].execution_id, None)
 
         memory_manager.reset_conversation(conversation_key)
+
+    def select_project(self, project_name: str, conversation_key: str = "cli") -> str:
+        """Reinicia la conversación y fija el proyecto en el que trabajará la siguiente."""
+        name = safe_project_name(project_name)
+        self.reset(conversation_key)
+        self.pinned_projects[conversation_key] = name
+        return name
+
+    def current_project(self, conversation_key: str = "cli") -> str | None:
+        conversation = self.conversations.get(conversation_key)
+        if conversation is not None:
+            return conversation["execution"].project_name
+        execution = memory_manager.get_conversation(conversation_key)
+        return None if execution is None else execution.project_name
 
     def _process_result(self, result, conversation_key: str) -> TaskResult:
         execution = self.conversations[conversation_key]["execution"]
