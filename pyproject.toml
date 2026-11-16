@@ -1,0 +1,23 @@
+[project]
+name = "harness"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+authors = [
+    { name = "Dei-web", email = "deilerc27@gmail.com" }
+]
+requires-python = ">=3.12"
+dependencies = [
+    "mcp>=2.3.0",
+    "python-dotenv>=1.2.4",
+    "python-telegram-bot>=22.8",
+    "strands-harness[openai]>=0.3.3",
+    "strands-shell>=0.5.0",
+]
+
+[project.scripts]
+harness = "harness:main"
+
+[build-system]
+requires = ["uv_build>=0.12.15,<0.13.0"]
+build-backend = "uv_build"

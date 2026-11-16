@@ -1,0 +1,32 @@
+# Python-generated files
+__pycache__/
+*.py[oc]
+build/
+dist/
+wheels/
+*.egg-info
+
+# Virtual environments
+.venv
+
+# Secretos (usa .env.example como plantilla)
+.env
+.env.*
+!.env.example
+
+# Datos de ejecución: base SQLite de ejecuciones/conversaciones y sesiones de Strands
+data/
+*.db
+*.sqlite3
+
+# Estado local de strands-harness (sesiones, memoria)
+.agent/
+
+# Proyectos generados por el agente (cada uno puede tener su propio repo)
+generated_projects/
+
+# Editores / SO
+.vscode/
+.idea/
+*.swp
+.DS_Store
